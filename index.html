@@ -1600,8 +1600,11 @@
         </div>
         <!-- RIGHT: Form -->
         <div class="c-form-box">
-          <form class="contact-form-el" action="https://formspree.io/f/xnjgkndj" method="POST">
-            <input type="hidden" name="_subject" value="New message from Portfolio">
+          <form class="contact-form-el" action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="4929a8f8-e5de-4a94-9374-024e33e1dbe2">
+            <input type="hidden" name="subject" value="New Portfolio Message from">
+            <input type="hidden" name="from_name" value="Portfolio Contact">
+            <input type="checkbox" name="botcheck" style="display:none;">
             <div class="c-form-row">
               <div class="c-form-group">
                 <label>Name</label>
@@ -1622,21 +1625,7 @@
             </button>
             <p class="cf-status"></p>
           </form>
-              <div class="c-form-group">
-                <label>Email</label>
-                <input type="email" id="mt-email" placeholder="Your email">
-              </div>
-            </div>
-            <div class="c-form-group">
-              <label>Message</label>
-              <textarea id="mt-message" placeholder="Your message..."></textarea>
-            </div>
-            <button class="c-send-btn" onclick="openMailto(this)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Send Message
-            </button>
-            <p class="cf-status" style="margin-top:10px;font-size:.82rem;color:var(--dark-panel-muted);">Opens your email app with the message pre-filled.</p>
-          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -2459,8 +2448,11 @@
         </div>
         <!-- RIGHT: Form -->
         <div class="c-form-box">
-          <form class="contact-form-el" action="https://formspree.io/f/xnjgkndj" method="POST">
-            <input type="hidden" name="_subject" value="New message from Portfolio">
+          <form class="contact-form-el" action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value="4929a8f8-e5de-4a94-9374-024e33e1dbe2">
+            <input type="hidden" name="subject" value="New Portfolio Message from">
+            <input type="hidden" name="from_name" value="Portfolio Contact">
+            <input type="checkbox" name="botcheck" style="display:none;">
             <div class="c-form-row">
               <div class="c-form-group">
                 <label>Name</label>
@@ -2481,21 +2473,7 @@
             </button>
             <p class="cf-status"></p>
           </form>
-              <div class="c-form-group">
-                <label>Email</label>
-                <input type="email" id="mt-email" placeholder="Your email">
-              </div>
-            </div>
-            <div class="c-form-group">
-              <label>Message</label>
-              <textarea id="mt-message" placeholder="Your message..."></textarea>
-            </div>
-            <button class="c-send-btn" onclick="openMailto(this)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Send Message
-            </button>
-            <p class="cf-status" style="margin-top:10px;font-size:.82rem;color:var(--dark-panel-muted);">Opens your email app with the message pre-filled.</p>
-          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -2628,12 +2606,12 @@
 })();
 
   
-  /* ── Contact Form (Formspree) ── */
+  /* ── Web3Forms Contact ── */
   (function() {
     function bindForms() {
       document.querySelectorAll('.contact-form-el').forEach(function(form) {
-        if (form._bound) return;
-        form._bound = true;
+        if (form._w3fBound) return;
+        form._w3fBound = true;
         form.addEventListener('submit', function(e) {
           e.preventDefault();
           var btn    = form.querySelector('button[type="submit"]');
@@ -2643,37 +2621,60 @@
           btn.textContent = 'Sending...';
           if (status) { status.textContent = ''; status.className = 'cf-status'; }
 
-          fetch('https://formspree.io/f/xnjgkndj', {
+          var data = new FormData(form);
+
+          fetch('https://api.web3forms.com/submit', {
             method: 'POST',
-            body: new FormData(form),
-            headers: { 'Accept': 'application/json' }
+            body: data
           })
           .then(function(r) { return r.json(); })
           .then(function(d) {
-            if (d.ok) {
-              if (status) { status.textContent = '\u2713 Message sent! I will reply soon.'; status.className = 'cf-status success'; }
+            if (d.success) {
+              if (status) {
+                status.textContent = '\u2713 Message sent! I will get back to you soon.';
+                status.className = 'cf-status success';
+              }
               form.reset();
             } else {
-              var err = (d.errors||[]).map(function(x){return x.message;}).join(', ') || 'Please try again.';
-              if (status) { status.textContent = '\u2717 ' + err; status.className = 'cf-status error'; }
+              if (status) {
+                status.textContent = '\u2717 ' + (d.message || 'Something went wrong. Please try again.');
+                status.className = 'cf-status error';
+              }
             }
           })
           .catch(function() {
-            if (status) { status.textContent = '\u2717 Failed. Email: arjun.chandroth.work@gmail.com'; status.className = 'cf-status error'; }
+            if (status) {
+              status.textContent = '\u2717 Failed to send. Email: arjun.chandroth.work@gmail.com';
+              status.className = 'cf-status error';
+            }
           })
-          .finally(function() { btn.innerHTML = orig; btn.disabled = false; });
+          .finally(function() {
+            btn.innerHTML = orig;
+            btn.disabled = false;
+          });
         });
       });
     }
 
-    document.addEventListener('DOMContentLoaded', bindForms);
+    // Bind on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bindForms);
+    } else {
+      bindForms();
+    }
+
+    // Re-bind after SPA page navigation
     setTimeout(function() {
       bindForms();
-      var nav = window.navigate;
-      if (nav) {
-        window.navigate = function(p, s) { nav(p, s); setTimeout(bindForms, 200); };
+      var origNav = window.navigate;
+      if (origNav && !origNav._patched) {
+        window.navigate = function(p, s) {
+          origNav(p, s);
+          setTimeout(bindForms, 250);
+        };
+        window.navigate._patched = true;
       }
-    }, 400);
+    }, 500);
   })();
 
 </script>
