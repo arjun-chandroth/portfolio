@@ -1600,12 +1600,28 @@
         </div>
         <!-- RIGHT: Form -->
         <div class="c-form-box">
-          <div class="mailto-form">
+          <form class="contact-form-el" action="https://formspree.io/f/xnjgkndj" method="POST">
+            <input type="hidden" name="_subject" value="New message from Portfolio">
             <div class="c-form-row">
               <div class="c-form-group">
                 <label>Name</label>
-                <input type="text" id="mt-name" placeholder="Your name">
+                <input type="text" name="name" placeholder="Your name" required>
               </div>
+              <div class="c-form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Your email" required>
+              </div>
+            </div>
+            <div class="c-form-group">
+              <label>Message</label>
+              <textarea name="message" placeholder="Your message..." required></textarea>
+            </div>
+            <button type="submit" class="c-send-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Message
+            </button>
+            <p class="cf-status"></p>
+          </form>
               <div class="c-form-group">
                 <label>Email</label>
                 <input type="email" id="mt-email" placeholder="Your email">
@@ -2443,12 +2459,28 @@
         </div>
         <!-- RIGHT: Form -->
         <div class="c-form-box">
-          <div class="mailto-form">
+          <form class="contact-form-el" action="https://formspree.io/f/xnjgkndj" method="POST">
+            <input type="hidden" name="_subject" value="New message from Portfolio">
             <div class="c-form-row">
               <div class="c-form-group">
                 <label>Name</label>
-                <input type="text" id="mt-name" placeholder="Your name">
+                <input type="text" name="name" placeholder="Your name" required>
               </div>
+              <div class="c-form-group">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="Your email" required>
+              </div>
+            </div>
+            <div class="c-form-group">
+              <label>Message</label>
+              <textarea name="message" placeholder="Your message..." required></textarea>
+            </div>
+            <button type="submit" class="c-send-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              Send Message
+            </button>
+            <p class="cf-status"></p>
+          </form>
               <div class="c-form-group">
                 <label>Email</label>
                 <input type="email" id="mt-email" placeholder="Your email">
@@ -2596,34 +2628,53 @@
 })();
 
   
-  /* ── Mailto contact ── */
-  window.openMailto = function(btn) {
-    var wrap    = btn.closest('.mailto-form');
-    var name    = (wrap.querySelector('#mt-name').value.trim())    || '';
-    var email   = (wrap.querySelector('#mt-email').value.trim())   || '';
-    var message = (wrap.querySelector('#mt-message').value.trim()) || '';
-    var status  = wrap.querySelector('.cf-status');
+  /* ── Contact Form (Formspree) ── */
+  (function() {
+    function bindForms() {
+      document.querySelectorAll('.contact-form-el').forEach(function(form) {
+        if (form._bound) return;
+        form._bound = true;
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          var btn    = form.querySelector('button[type="submit"]');
+          var status = form.querySelector('.cf-status');
+          var orig   = btn.innerHTML;
+          btn.disabled = true;
+          btn.textContent = 'Sending...';
+          if (status) { status.textContent = ''; status.className = 'cf-status'; }
 
-    if (!name && !email && !message) {
-      status.textContent = 'Fill in at least one field.';
-      status.style.color = 'var(--accent)';
-      return;
+          fetch('https://formspree.io/f/xnjgkndj', {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json' }
+          })
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            if (d.ok) {
+              if (status) { status.textContent = '\u2713 Message sent! I will reply soon.'; status.className = 'cf-status success'; }
+              form.reset();
+            } else {
+              var err = (d.errors||[]).map(function(x){return x.message;}).join(', ') || 'Please try again.';
+              if (status) { status.textContent = '\u2717 ' + err; status.className = 'cf-status error'; }
+            }
+          })
+          .catch(function() {
+            if (status) { status.textContent = '\u2717 Failed. Email: arjun.chandroth.work@gmail.com'; status.className = 'cf-status error'; }
+          })
+          .finally(function() { btn.innerHTML = orig; btn.disabled = false; });
+        });
+      });
     }
 
-    var body = 'Hi Arjun,%0A%0A'
-      + 'Name: ' + encodeURIComponent(name) + '%0A'
-      + 'Email: ' + encodeURIComponent(email) + '%0A%0A'
-      + 'Message:%0A' + encodeURIComponent(message);
-
-    var mailto = 'mailto:arjun.chandroth.work@gmail.com'
-      + '?subject=' + encodeURIComponent('Portfolio Contact from ' + (name || 'Visitor'))
-      + '&body=' + body;
-
-    window.open(mailto, '_blank');
-
-    status.textContent = '\u2713 Opening your email app...';
-    status.style.color = '#4dff91';
-  };
+    document.addEventListener('DOMContentLoaded', bindForms);
+    setTimeout(function() {
+      bindForms();
+      var nav = window.navigate;
+      if (nav) {
+        window.navigate = function(p, s) { nav(p, s); setTimeout(bindForms, 200); };
+      }
+    }, 400);
+  })();
 
 </script>
 
